@@ -5,7 +5,7 @@ import csv
 def tirar_dados():
     tiradas=0
     fin_turno=False
-    dados=[0,0,0,0,0]
+    dados=[0]*5
     dados_listos=[False,False,False,False,False]
     while tiradas<3 and fin_turno==False:
         if tiradas==0:
@@ -55,8 +55,13 @@ def nueva_categoria(dados,tiradas):
     cat_elegida = input("Elija una categoria para anotar: ")
     print("Desea tachar la categoria?") 
     tachar=validar_rta()
+    fin=False
     if tiradas==1:
-        valor=5
+        if cat_elegida=='G':
+            valor=30
+            fin=True
+        else:
+            valor=5
     else:
         valor=0
     if cat_elegida == "E" and tachar == "NO":
@@ -69,11 +74,11 @@ def nueva_categoria(dados,tiradas):
         valor += 50
     if cat_elegida!='E' and cat_elegida!='F' and cat_elegida!='P' and cat_elegida!='G':
         valor=numeros(dados,cat_elegida)
-    return valor,cat_elegida,tachar
+    return valor,cat_elegida,tachar,fin
 
 def categorias(l1, l2, tiradas,dados): 
         jugador = int(input('Que jugador quiere anotar: '))
-        valor, cat_elegida, tachar = nueva_categoria(dados,tiradas)
+        valor, cat_elegida, tachar, fin = nueva_categoria(dados,tiradas)
         if jugador == 1 :
             l1[0].append(cat_elegida)
             l1[1] = int(valor)
@@ -82,7 +87,7 @@ def categorias(l1, l2, tiradas,dados):
             l2[1] = int(valor)
 
 
-        return(cat_elegida, jugador, valor, tachar)   
+        return cat_elegida, jugador, valor, tachar, fin  
 
 
 def guardar_o_modificar(categoria, jugador, puntos, tachar, dados,tiradas):
@@ -111,9 +116,9 @@ def guardar_o_modificar(categoria, jugador, puntos, tachar, dados,tiradas):
 
 
     except FileNotFoundError:
-        # Si no existe, creo planilla inicial 
+        #Si no existe, creo planilla inicial 
 
-        planilla = [["E", '', ''], ["F", '', ''], ["P", '', ''], ["G", '', ''], ["1", '', ''], ["2", '', ''], ["3", '', ''], ["4", '', ''], ["5", '', ''], ["6", '', ''],['Total:',0,0]]
+        planilla = [["E", '', ''], ["F", '', ''], ["P", '', ''], ["G", '', ''], ["1", '', ''], ["2", '', ''], ["3", '', ''], ["4", '', ''], ["5", '', ''], ["6", '', ''],['Total',0,0]]
     #  Modifico el puntaje
     anotado=False
     while anotado==False:
@@ -153,6 +158,7 @@ def guardar_o_modificar(categoria, jugador, puntos, tachar, dados,tiradas):
         planilla[len(planilla)-1][1]=total
     else:
         planilla[len(planilla)-1][2]=total
+    ganador=definir_ganador(int(planilla[-1][1]),int(planilla[-1][2]))
     
 
                   
@@ -165,18 +171,42 @@ def guardar_o_modificar(categoria, jugador, puntos, tachar, dados,tiradas):
 
         for fila in planilla:
             escritor.writerow(fila)
+    return ganador
+
+def definir_ganador(puntos1,puntos2):
+    if puntos1>puntos2:
+        ganador=1
+    elif puntos2>puntos1:
+        ganador=2
+    else:
+        ganador=0
+    return ganador
             
 
 def main():
     turnos=0
-    while turnos<20:
+    fin=False
+    while fin==False:
         jugador1 = [[], []]
         jugador2 = [[], []]
         dados,nro_tirada=tirar_dados()
-        cat, jugador, valor, tachar = categorias(jugador1, jugador2, nro_tirada,dados)
-        guardar_o_modificar(cat, jugador, valor, tachar,dados,nro_tirada)
+        cat, jugador, valor, tachar, fin = categorias(jugador1, jugador2, nro_tirada,dados)
+        ganador=guardar_o_modificar(cat, jugador, valor, tachar,dados,nro_tirada)
         turnos+=1
+        if fin==True:
+            print(f'Fin del juego. Gano el jugador {jugador}.')
+        elif turnos==20:
+            fin=True
+            print(f'Fin del juego. Gano el jugador {ganador}.')
+          
+    
+    
 
+
+
+# No cambiar a partir de aqui
+if __name__ == "__main__":
+    main()
 
 
 # No cambiar a partir de aqui
